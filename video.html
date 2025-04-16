@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+<!-- 强制微信使用现代解码 -->
+<meta name="referrer" content="no-referrer">
+<script>
+// 预加载视频（微信专用）
+document.addEventListener('WeixinJSBridgeReady', function() {
+    const video = document.querySelector('video');
+    video.preload = "auto"; // 确保视频预加载
+    video.load();
+}, false);
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>福师大勇闯复旦队</title> <!-- 这里改成你的标题 -->
@@ -48,27 +58,41 @@
     </div>
 
     <!-- 视频主体 -->
-    <video controls autoplay muted>
+    <video controls muted>
         <source src="myvideo.mp4" type="video/mp4">
         您的浏览器不支持视频播放
     </video>
 
     <script>
     // 实时检测网络状态
+    let video = document.querySelector('video');
     function updateOnlineStatus() {
         if (!navigator.onLine) {
             document.getElementById('offline-alert').style.display = 'block';
+            video.pause(); // 网络断开时暂停视频
+        } else {
+            document.getElementById('offline-alert').style.display = 'none';
+            video.play(); // 网络恢复时尝试播放视频
         }
     }
 
     // 初次加载时检测
     updateOnlineStatus();
-    
+
     // 监听网络变化
-    window.addEventListener('online', () => {
-        document.getElementById('offline-alert').style.display = 'none';
-    });
+    window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
+
+    // 尝试自动播放视频（兼容性处理）
+    function tryAutoPlay() {
+        video.play().catch(err => {
+            console.log("自动播放失败，需要用户交互才能播放");
+            // 可以在这里添加一个播放按钮，提示用户点击播放
+        });
+    }
+
+    // 页面加载完成后尝试自动播放
+    window.onload = tryAutoPlay;
     </script>
 </body>
 </html>
